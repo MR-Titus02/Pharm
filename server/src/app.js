@@ -3,8 +3,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import authRoutes from "./routes/auth.routes.js";
-import { protect } from "../src/middlewares/auth.middleware.js";
-import { authorizeRoles } from "../src/middlewares/role.middleware.js";
 
 dotenv.config();
 connectDB();
@@ -17,5 +15,6 @@ app.use(express.json());
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
+app.use("/api/auth", authRoutes);
 
 export default app;
