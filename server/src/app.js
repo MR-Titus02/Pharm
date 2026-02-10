@@ -7,6 +7,7 @@ import medicineRoutes from "./routes/medicine.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import requestRoutes from "./routes/request.routes.js";
 import path from "path";
+import errorHandler from "./middlewares/error.middleware.js";
 
 dotenv.config();
 connectDB();
@@ -27,6 +28,10 @@ app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use("/api/upload", uploadRoutes);
 
 app.use("/api/requests", requestRoutes);
+
+
+// error handler LAST
+app.use(errorHandler);
 
 
 export default app;
