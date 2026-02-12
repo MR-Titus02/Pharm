@@ -1,37 +1,45 @@
+import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
-const Home = () => <div className="p-6">User Dashboard</div>;
-const AdminDashboard = () => <div className="p-6">Admin Dashboard</div>;
+import UserLayout from "./layouts/UserLayout";
+import AdminLayout from "./layouts/AdminLayout";
+
+const UserDashboard = () => <div>User Dashboard</div>;
+const AdminDashboard = () => <div>Admin Dashboard</div>;
 
 function App() {
   return (
     <Routes>
+
       {/* Public */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* User */}
+      {/* User Routes */}
       <Route
-        path="/"
         element={
           <ProtectedRoute>
-            <Home />
+            <UserLayout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route path="/" element={<UserDashboard />} />
+      </Route>
 
-      {/* Admin */}
+      {/* Admin Routes */}
       <Route
-        path="/admin"
         element={
           <ProtectedRoute adminOnly>
-            <AdminDashboard />
+            <AdminLayout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route path="/admin" element={<AdminDashboard />} />
+      </Route>
+
     </Routes>
   );
 }
