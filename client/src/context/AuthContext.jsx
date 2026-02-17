@@ -17,27 +17,29 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-const login = async (data) => {
-  const res = await loginUser(data);
+  const login = async (data) => {
+    const res = await loginUser(data);
 
-  const { token, ...userData } = res;
+    const { token, ...userData } = res;
 
-  localStorage.setItem("token", token);
-  localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(userData));
 
-  setUser(userData);
-};
+    setUser(userData);
+    return userData;
+  };
 
-const register = async (data) => {
-  const res = await registerUser(data);
+  const register = async (data) => {
+    const res = await registerUser(data);
 
-  const { token, ...userData } = res;
+    const { token, ...userData } = res;
 
-  localStorage.setItem("token", token);
-  localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(userData));
 
-  setUser(userData);
-};
+    setUser(userData);
+    return userData;
+  };
 
   const logout = () => {
     localStorage.removeItem("token");
