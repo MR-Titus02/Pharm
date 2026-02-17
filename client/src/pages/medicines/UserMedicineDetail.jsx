@@ -1,190 +1,128 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchMedicineById, fetchMedicines } from "../../services/medicineService";
+import { fetchMedicineById } from "../../services/medicineService";
 import LoadingState from "../../components/LoadingState";
 import ErrorState from "../../components/ErrorState";
 import StatusBadge from "../../components/StatusBadge";
+import { useAuth } from "../../context/AuthContext";
 
 const UserMedicineDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  
   const [medicine, setMedicine] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [related, setRelated] = useState([]);
-
-  const loadMedicine = async () => {
-    try {
-      setError("");
-      setLoading(true);
-      const data = await fetchMedicineById(id);
-      setMedicine(data);
-
-      // Fetch related medicines by category
-      if (data?.category) {
-        const all = await fetchMedicines();
-        const list = Array.isArray(all) ? all : all?.medicines || [];
-        const relatedItems = list
-          .filter((m) => m._id !== data._id && m.category === data.category)
-          .slice(0, 4);
-        setRelated(relatedItems);
-      } else {
-        setRelated([]);
-      }
-    } catch (err) {
-      const status = err.response?.status;
-      if (status === 404) {
-        setError("This medicine could not be found.");
-      } else {
-        setError(
-          err.response?.data?.message ||
-            "Failed to load medicine details."
-        );
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
+    const loadMedicine = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchMedicineById(id);
+        setMedicine(data);
+      } catch (err) {
+        setError("Failed to load medicine details.");
+      } finally {
+        setLoading(false);
+      }
+    };
     loadMedicine();
   }, [id]);
 
-  if (loading) {
-    return <LoadingState message="Loading medicine details..." />;
-  }
+  if (loading) return <LoadingState message="Loading details..." />;
+  if (error) return <ErrorState message={error} onRetry={() => window.location.reload()} />;
+  if (!medicine) return <ErrorState message="Medicine not found" />;
 
-  if (error) {
-    return <ErrorState message={error} onRetry={loadMedicine} />;
-  }
-
-  if (!medicine) {
-    return (
-      <ErrorState message="Medicine details are not available." />
-    );
-  }
-
-  const {
-    name,
-    description,
-    price,
-    inStock,
-    requiresPrescription,
-    dosage,
-    form,
-    manufacturer,
-    category,
-  } = medicine;
-
-  const stockFlag =
-    typeof inStock === "boolean" ? inStock : (medicine.stock ?? 0) > 0;
-
-  const stockVariant = stockFlag ? "success" : "danger";
-  const stockLabel = stockFlag ? "In stock" : "Out of stock";
-
-  const rxVariant = requiresPrescription ? "warning" : "info";
-  const rxLabel = requiresPrescription ? "Prescription required" : "Over-the-counter";
+  const handleRequest = () => {
+    // Navigate to request creation with pre-filled medicine ID
+    navigate("/requests/new", { state: { medicineId: medicine._id, medicineName: medicine.name } });
+  };
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-4xl mx-auto">
       <button
-        type="button"
-        onClick={() => navigate(-1)}
-        className="mb-4 text-xs font-medium text-sky-700 hover:text-sky-800"
+        onClick={() => navigate("/medicines")}
+        className="mb-4 text-xs font-medium text-slate-500 hover:text-slate-700 flex items-center gap-1"
       >
         ← Back to medicines
       </button>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <header className="mb-4 flex items-start justify-between gap-3">
-          <div>
-            <h1 className="text-lg font-semibold text-slate-900">
-              {name}
-            </h1>
-            {manufacturer && (
-              <p className="mt-1 text-xs text-slate-500">
-                {manufacturer}
-              </p>
-            )}
-            {category && (
-              <p className="mt-1 text-[11px] text-slate-500">
-                Category: {category}
-              </p>
-            )}
-          </div>
-          {typeof price === "number" && (
-            <p className="text-base font-semibold text-emerald-700">
-              ${price.toFixed(2)}
-            </p>
-          )}
-        </header>
-
-        {description && (
-          <p className="mb-4 text-sm text-slate-700">{description}</p>
-        )}
-
-        <div className="mb-4 flex flex-wrap gap-2 text-xs">
-          <StatusBadge label={stockLabel} variant={stockVariant} />
-          <StatusBadge label={rxLabel} variant={rxVariant} />
-          {form && (
-            <StatusBadge label={form} variant="neutral" />
-          )}
-        </div>
-
-        {dosage && (
-          <dl className="mt-2 grid grid-cols-1 gap-3 text-xs text-slate-600 sm:grid-cols-2">
-            <div>
-              <dt className="font-semibold text-slate-700">
-                Dosage
-              </dt>
-              <dd>{dosage}</dd>
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm grid md:grid-cols-2">
+        <div className="bg-slate-100 flex items-center justify-center p-8 min-h-[300px]">
+          {/* Placeholder for real image */}
+          <div className="text-center">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-slate-200 text-3xl">
+              💊
             </div>
-          </dl>
-        )}
-
-        <p className="mt-6 rounded-lg bg-sky-50 p-3 text-[11px] text-sky-700">
-          For safety, prescription enforcement is validated on the
-          server when you create a request. Always follow your
-          healthcare provider&apos;s guidance.
-        </p>
-      </div>
-
-      {related.length > 0 && (
-        <div className="mt-6">
-          <h2 className="mb-3 text-sm font-semibold text-slate-900">
-            Related medicines
-          </h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {related.map((item) => (
-              <button
-                key={item._id}
-                type="button"
-                onClick={() => navigate(`/medicines/${item._id}`)}
-                className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left text-xs hover:bg-slate-100"
-              >
-                <div>
-                  <p className="font-medium text-slate-900">
-                    {item.name}
-                  </p>
-                  {item.manufacturer && (
-                    <p className="text-[11px] text-slate-500">
-                      {item.manufacturer}
-                    </p>
-                  )}
-                </div>
-                {typeof item.price === "number" && (
-                  <p className="text-[11px] font-semibold text-emerald-700">
-                    ${item.price.toFixed(2)}
-                  </p>
-                )}
-              </button>
-            ))}
+            <p className="mt-4 text-sm text-slate-400 font-medium">No image available</p>
           </div>
         </div>
-      )}
+
+        <div className="p-8 flex flex-col">
+          <div className="mb-auto">
+            <div className="flex items-start justify-between gap-4">
+               <div>
+                  <span className="inline-block rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 mb-2">
+                    {medicine.category || "General"}
+                  </span>
+                  <h1 className="text-2xl font-bold text-slate-900">{medicine.name}</h1>
+                  <p className="text-sm text-slate-500 mt-1">{medicine.manufacturer}</p>
+               </div>
+               <div className="text-right">
+                 <p className="text-xl font-bold text-sky-600">${medicine.price?.toFixed(2)}</p>
+               </div>
+            </div>
+
+            <div className="mt-6 space-y-4">
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Description</h3>
+                <p className="mt-1 text-sm text-slate-700 leading-relaxed">
+                  {medicine.description}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                   <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Dosage</h3>
+                   <p className="mt-1 text-sm text-slate-900">{medicine.dosage || "N/A"}</p>
+                </div>
+                <div>
+                   <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Form</h3>
+                   <p className="mt-1 text-sm text-slate-900">{medicine.form || "Tablet"}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 pt-2">
+                 <StatusBadge 
+                    label={medicine.stock > 0 ? "In Stock" : "Out of Stock"} 
+                    variant={medicine.stock > 0 ? "success" : "error"} 
+                 />
+                 {medicine.prescriptionRequired && (
+                    <StatusBadge label="Prescription Required" variant="warning" />
+                 )}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-slate-100">
+             <button
+               onClick={handleRequest}
+               disabled={!medicine.stock}
+               className="w-full rounded-lg bg-sky-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+             >
+               {medicine.stock > 0 ? "Request Medicine" : "Out of Stock"}
+             </button>
+             {medicine.prescriptionRequired && (
+                <p className="mt-3 text-xs text-center text-amber-600">
+                  ⚠️ You will need to upload a prescription for this item.
+                </p>
+             )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
 export default UserMedicineDetail;
-

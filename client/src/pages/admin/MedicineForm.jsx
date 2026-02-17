@@ -5,6 +5,7 @@ import {
   updateMedicine,
   fetchMedicineById,
 } from "../../services/medicineService";
+import { fetchCategories } from "../../services/categoryService";
 import LoadingState from "../../components/LoadingState";
 import { useToast } from "../../context/ToastContext";
 
@@ -17,6 +18,7 @@ const initialState = {
   dosage: "",
   form: "",
   manufacturer: "",
+  category: "",
 };
 
 const MedicineForm = () => {
@@ -27,6 +29,7 @@ const MedicineForm = () => {
   const [form, setForm] = useState(initialState);
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(isEdit);
+  const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
   const { showToast } = useToast();
 
@@ -43,6 +46,7 @@ const MedicineForm = () => {
           dosage: data.dosage || "",
           form: data.form || "",
           manufacturer: data.manufacturer || "",
+          category: data.category || "",
         });
       } catch (err) {
         setError(
@@ -57,7 +61,23 @@ const MedicineForm = () => {
     if (isEdit) {
       load();
     }
+
   }, [id, isEdit]);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await fetchCategories();
+        setCategories(data);
+        if (!isEdit && data.length > 0) {
+           setForm(f => ({ ...f, category: data[0].name }));
+        }
+      } catch (err) {
+        console.error("Failed to load categories");
+      }
+    };
+    loadCategories();
+  }, [isEdit]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -217,6 +237,26 @@ const MedicineForm = () => {
               />
             </div>
           </div>
+
+          <div>
+            <label className="mb-1 block font-semibold text-slate-700">
+              Category
+            </label>
+            <select
+              name="category"
+              value={form.category}
+              onChange={handleChange}
+              className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            >
+              <option value="">Select category</option>
+              {categories.map((cat) => (
+                <option key={cat._id} value={cat.name}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
 
           <div className="flex flex-wrap gap-4 pt-2 text-xs">
             <label className="inline-flex items-center gap-2 text-slate-700">

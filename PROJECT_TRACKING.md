@@ -105,11 +105,11 @@
 #### F9 – Extended Requirements (Customer/User)
 - [x] **F9-U1**: Sign up & log in (with NIC captured at registration).  
 - [x] **F9-U2**: View all available tablets/medicines.  
-- [ ] **F9-U3**: Client-side search tablets by name.  
-- [ ] **F9-U4**: Client-side filters by category, price range, availability using existing medicine fields.  
+- [x] **F9-U3**: Client-side search tablets by name.  
+- [x] **F9-U4**: Client-side filters by category, price range, availability using existing medicine fields.  
 - [x] **F9-U5**: View tablet details (name, description, price, manufacturer, prescription required).  
 - [x] **F9-U6**: Request tablets with prescription upload when required.  
-- [ ] **F9-U7**: Capture and persist NIC per request where required.  
+- [x] **F9-U7**: Capture and persist NIC per request where required.  
 - [ ] **F9-U8**: Make online payments after approval (frontend + backend integration).  
 - [ ] **F9-U9**: Show in-app notifications for key events (request submitted/approved/rejected, payment, delivery).  
 - [ ] **F9-U10**: Track delivery status per request (frontend views).  
@@ -121,10 +121,10 @@
 - [ ] **F9-A3**: Manage tablet categories (CRUD/categories UI on top of `medicine.category`).  
 - [x] **F9-A4**: View prescription uploads attached to requests.  
 - [x] **F9-A5**: Approve or reject medicine/tablet requests.  
-- [ ] **F9-A6**: Manage users (basic user list and status management).  
+- [x] **F9-A6**: Manage users (basic user list and status management).  
 - [ ] **F9-A7**: Manage payments and transactions (payments list, statuses).  
 - [ ] **F9-A8**: Control delivery flow and status transitions.  
-- [ ] **F9-A9**: Reports: orders, users, medicines overview dashboards.
+- [x] **F9-A9**: Reports: orders, users, medicines overview dashboards.
 
 #### F9 – Cross-cutting Features
 - [ ] **F9-X1**: Online payment integration (card now, wallet/UPI ready).  
@@ -150,10 +150,28 @@
   - Extract shared UI primitives (buttons, badges, cards, layout sections) as F4/F5 progress to avoid duplication.  
   - Consolidate any repeated loading/error UI into dedicated components during F6/F7.
 
+
 ### 7. Technical Debt
 > Use this to track known issues or compromises that should be addressed before/around F7.
 
 - **TD-1**: Auth loading UX is currently a simple text `Loading...` in `ProtectedRoute`. This should be replaced with a consistent skeleton or spinner component during F6 to avoid abrupt transitions.
 - **TD-2**: Dashboards for user and admin are placeholders. Real metrics/summary cards should be designed in F8 to better leverage the layouts.
+- **TD-3**: `client/src/api/axios.js` is unused and duplicates `client/src/utils/axiosInstance.js`. Scheduled for removal.
+- **TD-4**: `adminRequest.controller.js` isolates admin logic, which is good, but need to ensure routes are clean.
+
+### 8. Agent Transition Audit (2026-02-17)
+> Summary of findings during handover.
+
+- **State Match**: Project state matches `PROJECT_TRACKING.md` closely. Frontend features F1-F5 are implemented.
+- **Code Quality**: Generally good. Separation of concerns is maintained.
+- **Security Check**:
+  - Auth: JWT + BCrypt used correctly.
+  - Uploads: Multer with file type/size limits in place.
+  - RBAC: Middleware `protect` and `admin` (implied) usage needs final verification in routes.
+- **Action Items**:
+  1. Remove `client/src/api/axios.js`.
+  2. Verify `request.routes.js` wiring.
+  3. Resume development at **F9**.
+
 
 

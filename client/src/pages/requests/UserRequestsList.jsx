@@ -107,6 +107,9 @@ const UserRequestsList = () => {
               <th className="px-4 py-2 text-right font-semibold text-slate-300">
                 Created
               </th>
+              <th className="px-4 py-2 text-right font-semibold text-slate-300">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800/80">
@@ -141,6 +144,27 @@ const UserRequestsList = () => {
                           timeStyle: "short",
                         })
                       : "-"}
+                  </td>
+
+                  <td className="px-4 py-2 text-right">
+                    {request.status === "approved" && request.paymentStatus === "paid" && (
+                      <span className="text-xs font-semibold text-emerald-400">Paid</span>
+                    )}
+                    {request.status === "approved" && request.paymentStatus !== "paid" && (
+                      <Link
+                        to="/payment"
+                        state={{ request }}
+                        className="rounded bg-sky-600 px-2 py-1 text-xs font-semibold text-white hover:bg-sky-700"
+                      >
+                        Pay Now
+                      </Link>
+                    )}
+                    {request.status === "rejected" && (
+                      <span className="text-xs text-rose-400">Rejected</span>
+                    )}
+                    {request.status === "pending" && (
+                      <span className="text-xs text-slate-500">-</span>
+                    )}
                   </td>
                 </tr>
               );

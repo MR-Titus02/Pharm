@@ -12,9 +12,11 @@ const MedicineCard = ({ medicine }) => {
     name,
     description,
     price,
-    inStock,
+    stock,
     requiresPrescription,
   } = medicine;
+
+  const inStock = (stock ?? 0) > 0;
 
   const stockVariant = inStock ? "success" : "danger";
   const stockLabel = inStock ? "In stock" : "Out of stock";

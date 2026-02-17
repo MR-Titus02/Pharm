@@ -8,7 +8,7 @@ import Medicine from "../models/Medicine.js";
  */
 export const createRequest = async (req, res) => {
   try {
-    const { medicineId } = req.body;
+    const { medicineId, nic } = req.body;
 
     if (!medicineId) {
       return res.status(400).json({ message: "Medicine ID is required" });
@@ -29,7 +29,8 @@ export const createRequest = async (req, res) => {
 
     const request = await Request.create({
       userId: req.user._id,
-      medicineId,
+      medicinedId,
+      nic,
       prescriptionFile: medicine.prescriptionRequired
         ? `/uploads/${req.file.filename}`
         : null,

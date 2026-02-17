@@ -19,10 +19,25 @@ const requestSchema = new mongoose.Schema(
       required: false, // only required if medicine requires prescription
     },
 
+    nic: {
+      type: String,
+      trim: true,
+    },
+
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],
       default: "pending",
+    },
+
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "paid", "failed"],
+      default: "pending",
+    },
+
+    paymentDate: {
+      type: Date,
     },
   },
   { timestamps: true }

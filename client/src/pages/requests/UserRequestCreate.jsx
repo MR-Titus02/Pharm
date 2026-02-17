@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { fetchMedicines } from "../../services/medicineService";
 import { createRequest } from "../../services/requestService";
+import { useAuth } from "../../context/AuthContext";
 import LoadingState from "../../components/LoadingState";
 import ErrorState from "../../components/ErrorState";
 import { useToast } from "../../context/ToastContext";
@@ -16,6 +17,17 @@ const UserRequestCreate = () => {
   const [file, setFile] = useState(null);
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { state } = useLocation();
+
+  const [nic, setNic] = useState(user?.nic || "");
+
+  // Initialize with navigation state if available
+  useEffect(() => {
+    if (state?.medicineId) {
+      setSelectedMedicineId(state.medicineId);
+    }
+  }, [state]);
 
   useEffect(() => {
     const load = async () => {
@@ -60,6 +72,9 @@ const UserRequestCreate = () => {
       formData.append("medicineId", selectedMedicineId);
       if (file) {
         formData.append("prescription", file);
+      }
+      if (nic) {
+        formData.append("nic", nic);
       }
 
       await createRequest(formData);
@@ -134,6 +149,8 @@ const UserRequestCreate = () => {
             </select>
           </div>
 
+
+
           {selectedMedicine && (
             <div className="rounded-lg border border-slate-800/70 bg-slate-900/60 px-3 py-3 text-[11px] text-slate-200">
               <p className="font-semibold">{selectedMedicine.name}</p>
@@ -147,6 +164,22 @@ const UserRequestCreate = () => {
                   This medicine can be requested without a prescription.
                 </p>
               )}
+            </div>
+          )}
+
+          {selectedMedicine?.prescriptionRequired && (
+            <div>
+              <label className="mb-1 block text-slate-200">
+                NIC (National ID) <span className="text-rose-400">*</span>
+              </label>
+              <input
+                type="text"
+                value={nic}
+                onChange={(e) => setNic(e.target.value)}
+                placeholder="Required for Rx"
+                className="w-full rounded-md border border-slate-700 bg-slate-900/80 px-3 py-2 text-xs text-slate-50 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                required
+              />
             </div>
           )}
 

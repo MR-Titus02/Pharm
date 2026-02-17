@@ -13,6 +13,7 @@ const Register = () => {
     name: "",
     email: "",
     password: "",
+    nic: "",
   });
 
   const [error, setError] = useState("");
@@ -138,6 +139,19 @@ const Register = () => {
                 className="w-full rounded-md border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs text-slate-50 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                 onChange={handleChange}
                 required
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-slate-200">
+                NIC
+              </label>
+              <input
+                type="text"
+                name="nic"
+                placeholder="National ID"
+                className="w-full rounded-md border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs text-slate-50 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                onChange={handleChange}
               />
             </div>
 

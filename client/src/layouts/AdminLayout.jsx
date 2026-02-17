@@ -44,6 +44,18 @@ const AdminLayout = () => {
             >
               Requests
             </Link>
+            <Link
+              to="/admin/categories"
+              className="rounded-lg px-3 py-2 text-slate-200 hover:bg-slate-800/80 hover:text-purple-300"
+            >
+              Categories
+            </Link>
+            <Link
+              to="/admin/users"
+              className="rounded-lg px-3 py-2 text-slate-200 hover:bg-slate-800/80 hover:text-pink-300"
+            >
+              Users
+            </Link>
           </nav>
 
           <div className="mt-6 border-t border-slate-800/80 pt-4 text-xs">
