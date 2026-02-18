@@ -4,6 +4,7 @@ import {
   updateRequestStatus,
   updateDeliveryStatus,
 } from "../../services/requestService";
+import axiosInstance from "../../utils/axiosInstance";
 import LoadingState from "../../components/LoadingState";
 import ErrorState from "../../components/ErrorState";
 import EmptyState from "../../components/EmptyState";
@@ -30,6 +31,7 @@ const RequestsAdminList = () => {
   const [updatingId, setUpdatingId] = useState(null);
   const [updatingDeliveryId, setUpdatingDeliveryId] = useState(null);
   const [filter, setFilter] = useState("all");
+  const [viewingFile, setViewingFile] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -37,6 +39,38 @@ const RequestsAdminList = () => {
     pages: 0,
   });
   const { showToast } = useToast();
+
+  const isImageFile = (filePath) => {
+    if (!filePath) return false;
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    return imageExtensions.some(ext => filePath.toLowerCase().endsWith(ext));
+  };
+
+  const isPdfFile = (filePath) => {
+    if (!filePath) return false;
+    return filePath.toLowerCase().endsWith('.pdf');
+  };
+
+  const handleViewFile = (filePath) => {
+    setViewingFile(filePath);
+  };
+
+  const closeModal = () => {
+    setViewingFile(null);
+  };
+
+  const getFileUrl = (filePath) => {
+    if (!filePath) return "";
+    // If it's already a full URL, return as-is
+    if (filePath.startsWith("http")) return filePath;
+    
+    // Extract base server URL from API URL (remove /api)
+    const apiUrl = axiosInstance.defaults.baseURL || "http://localhost:5001/api";
+    const baseUrl = apiUrl.replace("/api", "");
+    
+    // Construct full file URL
+    return `${baseUrl}${filePath}`;
+  };
 
   const loadRequests = async (page = 1, status = "all") => {
     try {
@@ -242,14 +276,13 @@ const RequestsAdminList = () => {
                       </td>
                       <td className="px-4 py-2 text-[11px] text-slate-300">
                         {hasPrescription ? (
-                          <a
-                            href={request.prescriptionFile}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-sky-300 hover:text-sky-200"
+                          <button
+                            type="button"
+                            onClick={() => handleViewFile(request.prescriptionFile)}
+                            className="text-sky-300 hover:text-sky-200 font-medium"
                           >
                             View file
-                          </a>
+                          </button>
                         ) : (
                           "Not attached"
                         )}
@@ -354,6 +387,62 @@ const RequestsAdminList = () => {
 
       {error && requests.length > 0 && (
         <p className="text-[11px] text-rose-300">{error}</p>
+      )}
+
+      {viewingFile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+          <div className="relative max-h-[90vh] max-w-2xl w-full rounded-lg border border-slate-700 bg-slate-950 overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
+              <h2 className="text-sm font-semibold text-slate-100">Prescription Document</h2>
+              <button
+                onClick={closeModal}
+                className="text-slate-400 hover:text-slate-100"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="overflow-auto" style={{ maxHeight: 'calc(90vh - 60px)' }}>
+              {isImageFile(viewingFile) ? (
+                <div className="flex items-center justify-center bg-slate-900 p-4">
+                  <img
+                    src={getFileUrl(viewingFile)}
+                    alt="Prescription"
+                    className="max-w-full h-auto"
+                    onError={(e) => {
+                      e.target.src = "";
+                      e.target.parentElement.innerHTML = '<div class="text-center text-slate-400"><p>Failed to load image. Please try opening in a new window.</p></div>';
+                    }}
+                  />
+                </div>
+              ) : isPdfFile(viewingFile) ? (
+                <iframe
+                  src={getFileUrl(viewingFile)}
+                  title="Prescription PDF"
+                  className="w-full h-full"
+                  style={{ minHeight: '600px' }}
+                  onError={(e) => {
+                    console.error("PDF load error:", e);
+                  }}
+                />
+              ) : (
+                <div className="flex items-center justify-center p-8 text-slate-400">
+                  <div className="text-center">
+                    <p className="mb-2">Unable to preview this file type</p>
+                    <a
+                      href={getFileUrl(viewingFile)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sky-400 hover:text-sky-300 underline"
+                    >
+                      Open in new window
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -52,6 +52,15 @@ const UserRequestCreate = () => {
     (m) => m._id === selectedMedicineId
   );
 
+  // Validate SL NIC (both old 12-digit and new 13-digit with V formats)
+  const validateNIC = (nicValue) => {
+    if (!nicValue) return false;
+    // Old format: 12 digits (e.g., 123456789012)
+    // New format: 12 digits + V (e.g., 123456789012V)
+    const nicRegex = /^\d{12}V?$/;
+    return nicRegex.test(nicValue.toUpperCase());
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -63,6 +72,11 @@ const UserRequestCreate = () => {
 
     if (selectedMedicine?.prescriptionRequired && !file) {
       setError("A prescription file is required for this medicine.");
+      return;
+    }
+
+    if (selectedMedicine?.prescriptionRequired && nic && !validateNIC(nic)) {
+      setError("Please enter a valid SL NIC (e.g., 123456789012V or 123456789012).");
       return;
     }
 
@@ -175,11 +189,14 @@ const UserRequestCreate = () => {
               <input
                 type="text"
                 value={nic}
-                onChange={(e) => setNic(e.target.value)}
-                placeholder="Required for Rx"
-                className="w-full rounded-md border border-slate-700 bg-slate-900/80 px-3 py-2 text-xs text-slate-50 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                onChange={(e) => setNic(e.target.value.toUpperCase())}
+                placeholder="e.g., 123456789012V or 123456789012"
+                className="w-full rounded-md border border-slate-700 bg-slate-900/80 px-3 py-2 text-xs text-slate-50 uppercase focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
                 required
               />
+              <p className="mt-1 text-[10px] text-slate-400">
+                12 digits (old format) or 12 digits + V (new format)
+              </p>
             </div>
           )}
 
