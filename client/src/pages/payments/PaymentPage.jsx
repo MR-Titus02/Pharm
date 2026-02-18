@@ -13,6 +13,71 @@ const PaymentPage = () => {
   const [expiry, setExpiry] = useState("");
   const [cvc, setCvc] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  // Validate card number (remove spaces, check length)
+  const validateCardNumber = (value) => {
+    const cleaned = value.replace(/\s+/g, "");
+    return /^\d{13,19}$/.test(cleaned);
+  };
+
+  // Validate expiry (MM/YY format)
+  const validateExpiry = (value) => {
+    return /^(0[1-9]|1[0-2])\/\d{2}$/.test(value);
+  };
+
+  // Validate CVC (3-4 digits)
+  const validateCVC = (value) => {
+    return /^\d{3,4}$/.test(value);
+  };
+
+  // Format card number with spaces
+  const formatCardNumber = (value) => {
+    const cleaned = value.replace(/\s+/g, "");
+    const formatted = cleaned.replace(/(\d{4})(?=\d)/g, "$1 ");
+    return formatted.substring(0, 19);
+  };
+
+  // Format expiry as MM/YY
+  const formatExpiry = (value) => {
+    const cleaned = value.replace(/\D/g, "");
+    if (cleaned.length >= 2) {
+      return cleaned.substring(0, 2) + "/" + cleaned.substring(2, 4);
+    }
+    return cleaned;
+  };
+
+  const handleCardNumberChange = (e) => {
+    const formatted = formatCardNumber(e.target.value);
+    setCardNumber(formatted);
+    if (formatted && !validateCardNumber(formatted)) {
+      setErrors((prev) => ({ ...prev, cardNumber: "Card number must be 13-19 digits" }));
+    } else {
+      setErrors((prev) => ({ ...prev, cardNumber: "" }));
+    }
+  };
+
+  const handleExpiryChange = (e) => {
+    const formatted = formatExpiry(e.target.value);
+    setExpiry(formatted);
+    if (formatted && formatted.length < 5) {
+      setErrors((prev) => ({ ...prev, expiry: "Format must be MM/YY" }));
+    } else if (formatted && !validateExpiry(formatted)) {
+      setErrors((prev) => ({ ...prev, expiry: "Invalid expiry date" }));
+    } else {
+      setErrors((prev) => ({ ...prev, expiry: "" }));
+    }
+  };
+
+  const handleCVCChange = (e) => {
+    const value = e.target.value.replace(/\D/g, "").substring(0, 4);
+    setCvc(value);
+    if (value && !validateCVC(value)) {
+      setErrors((prev) => ({ ...prev, cvc: "CVC must be 3-4 digits" }));
+    } else {
+      setErrors((prev) => ({ ...prev, cvc: "" }));
+    }
+  };
 
   if (!request) {
     return (
@@ -30,12 +95,28 @@ const PaymentPage = () => {
 
   const handlePayment = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    const newErrors = {};
 
+    if (!validateCardNumber(cardNumber)) {
+      newErrors.cardNumber = "Invalid card number";
+    }
+    if (!validateExpiry(expiry)) {
+      newErrors.expiry = "Invalid expiry date (MM/YY)";
+    }
+    if (!validateCVC(cvc)) {
+      newErrors.cvc = "CVC must be 3-4 digits";
+    }
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
+
+    setLoading(true);
     try {
       await processPayment({
         requestId: request._id,
-        cardNumber,
+        cardNumber: cardNumber.replace(/\s+/g, ""),
         expiry,
         cvc,
       });
@@ -81,10 +162,16 @@ const PaymentPage = () => {
               type="text"
               placeholder="0000 0000 0000 0000"
               value={cardNumber}
-              onChange={(e) => setCardNumber(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              onChange={handleCardNumberChange}
+              maxLength="19"
+              className={`w-full rounded-md border px-3 py-2 text-sm text-slate-900 bg-white placeholder-slate-400 focus:outline-none focus:ring-1 ${
+                errors.cardNumber
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                  : "border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+              }`}
               required
             />
+            {errors.cardNumber && <p className="mt-1 text-xs text-red-600">{errors.cardNumber}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -94,10 +181,16 @@ const PaymentPage = () => {
                 type="text"
                 placeholder="MM/YY"
                 value={expiry}
-                onChange={(e) => setExpiry(e.target.value)}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                onChange={handleExpiryChange}
+                maxLength="5"
+                className={`w-full rounded-md border px-3 py-2 text-sm text-slate-900 bg-white placeholder-slate-400 focus:outline-none focus:ring-1 ${
+                  errors.expiry
+                    ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                    : "border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                }`}
                 required
               />
+              {errors.expiry && <p className="mt-1 text-xs text-red-600">{errors.expiry}</p>}
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">CVC</label>
@@ -105,32 +198,38 @@ const PaymentPage = () => {
                 type="text"
                 placeholder="123"
                 value={cvc}
-                onChange={(e) => setCvc(e.target.value)}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                onChange={handleCVCChange}
+                maxLength="4"
+                className={`w-full rounded-md border px-3 py-2 text-sm text-slate-900 bg-white placeholder-slate-400 focus:outline-none focus:ring-1 ${
+                  errors.cvc
+                    ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                    : "border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                }`}
                 required
               />
+              {errors.cvc && <p className="mt-1 text-xs text-red-600">{errors.cvc}</p>}
             </div>
           </div>
 
           <div className="pt-4">
             <button
               type="submit"
-              disabled={loading}
-              className="w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50"
+              disabled={loading || Object.values(errors).some((e) => e)}
+              className="w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Processing..." : "Pay Now"}
             </button>
             <button
               type="button"
               onClick={() => navigate("/requests")}
-              className="mt-3 w-full text-xs text-slate-500 hover:text-slate-700"
+              className="mt-3 w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
               Cancel
             </button>
           </div>
           
-          <p className="text-center text-[10px] text-slate-400 mt-4">
-             This is a secure 256-bit SSL encrypted payment.
+          <p className="text-center text-[10px] text-slate-500 mt-4">
+            💳 This is a secure 256-bit SSL encrypted payment.
           </p>
         </form>
       </div>

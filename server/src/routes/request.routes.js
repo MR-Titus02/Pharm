@@ -8,6 +8,7 @@ import upload from "../middlewares/upload.middleware.js";
 import {
   getAllRequests,
   updateRequestStatus,
+  updateDeliveryStatus,
 } from "../controllers/adminRequest.controller.js";
 import { authorizeRoles } from "../middlewares/role.middleware.js";
 
@@ -27,5 +28,6 @@ router.get("/user", protect, getUserRequests);
 // ADMIN routes
 router.get("/", protect, authorizeRoles("admin"), getAllRequests);
 router.put("/:id", protect, authorizeRoles("admin"), updateRequestStatus);
+router.put("/:id/delivery", protect, authorizeRoles("admin"), updateDeliveryStatus);
 
 export default router;

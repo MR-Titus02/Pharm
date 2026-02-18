@@ -12,17 +12,33 @@ const getStatusVariant = (status) => {
   return "warning";
 };
 
+const getDeliveryVariant = (status) => {
+  if (status === "delivered") return "success";
+  if (status === "shipped") return "info";
+  if (status === "cancelled") return "danger";
+  return "warning";
+};
+
 const UserRequestsList = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    pages: 0,
+  });
 
-  const loadRequests = async () => {
+  const loadRequests = async (page = 1) => {
     try {
       setError("");
       setLoading(true);
-      const data = await getUserRequests();
-      setRequests(Array.isArray(data) ? data : []);
+      const data = await getUserRequests(page, 10);
+      setRequests(Array.isArray(data) ? data : data?.requests || []);
+      if (data?.pagination) {
+        setPagination(data.pagination);
+      }
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -34,15 +50,21 @@ const UserRequestsList = () => {
   };
 
   useEffect(() => {
-    loadRequests();
+    loadRequests(1);
   }, []);
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= pagination.pages) {
+      loadRequests(newPage);
+    }
+  };
 
   if (loading) {
     return <LoadingState message="Loading your requests..." />;
   }
 
   if (error) {
-    return <ErrorState message={error} onRetry={loadRequests} />;
+    return <ErrorState message={error} onRetry={() => loadRequests(1)} />;
   }
 
   if (!requests.length) {
@@ -80,7 +102,7 @@ const UserRequestsList = () => {
             My requests
           </h1>
           <p className="text-xs text-slate-400">
-            Track the status of your prescription requests.
+            Track the status of your prescription requests. Delivery status will be updated once your request is approved and paid.
           </p>
         </div>
         <Link
@@ -91,7 +113,7 @@ const UserRequestsList = () => {
         </Link>
       </header>
 
-      <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-950/70">
+      <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/70">
         <table className="min-w-full divide-y divide-slate-800 text-xs">
           <thead className="bg-slate-900/70">
             <tr>
@@ -100,6 +122,9 @@ const UserRequestsList = () => {
               </th>
               <th className="px-4 py-2 text-left font-semibold text-slate-300">
                 Status
+              </th>
+              <th className="px-4 py-2 text-left font-semibold text-slate-300">
+                Delivery
               </th>
               <th className="px-4 py-2 text-left font-semibold text-slate-300">
                 Prescription
@@ -134,6 +159,15 @@ const UserRequestsList = () => {
                       variant={getStatusVariant(request.status)}
                     />
                   </td>
+                  <td className="px-4 py-2">
+                    <StatusBadge
+                      label={
+                        (request.deliveryStatus || "pending").charAt(0).toUpperCase() +
+                        (request.deliveryStatus || "pending").slice(1)
+                      }
+                      variant={getDeliveryVariant(request.deliveryStatus || "pending")}
+                    />
+                  </td>
                   <td className="px-4 py-2 text-[11px] text-slate-300">
                     {hasPrescription ? "Attached" : "Not required"}
                   </td>
@@ -163,7 +197,7 @@ const UserRequestsList = () => {
                       <span className="text-xs text-rose-400">Rejected</span>
                     )}
                     {request.status === "pending" && (
-                      <span className="text-xs text-slate-500">-</span>
+                      <span className="text-xs text-slate-400">Awaiting approval...</span>
                     )}
                   </td>
                 </tr>
@@ -172,6 +206,49 @@ const UserRequestsList = () => {
           </tbody>
         </table>
       </div>
+
+      {pagination.pages > 1 && (
+        <div className="flex items-center justify-between border-t border-slate-800 pt-4">
+          <div className="text-xs text-slate-400">
+            Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
+            {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
+            {pagination.total} requests
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handlePageChange(pagination.page - 1)}
+              disabled={pagination.page === 1}
+              className="rounded-md border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-800 enabled:hover:text-slate-100"
+            >
+              ← Previous
+            </button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: pagination.pages }, (_, i) => i + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`rounded-md px-2.5 py-1.5 text-xs font-medium ${
+                      page === pagination.page
+                        ? "bg-sky-600 text-white"
+                        : "border border-slate-700 text-slate-300 hover:bg-slate-800"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
+            </div>
+            <button
+              onClick={() => handlePageChange(pagination.page + 1)}
+              disabled={pagination.page === pagination.pages}
+              className="rounded-md border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-800 enabled:hover:text-slate-100"
+            >
+              Next →
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

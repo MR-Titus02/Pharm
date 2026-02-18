@@ -9,18 +9,27 @@ const UserMedicinesList = () => {
   const [medicines, setMedicines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    pages: 0,
+  });
 
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
   const [maxPrice, setMaxPrice] = useState("");
 
-  const loadMedicines = async () => {
+  const loadMedicines = async (page = 1) => {
     try {
       setError("");
       setLoading(true);
-      const data = await fetchMedicines();
+      const data = await fetchMedicines(page, 10);
       setMedicines(Array.isArray(data) ? data : data?.medicines || []);
+      if (data?.pagination) {
+        setPagination(data.pagination);
+      }
     } catch (err) {
       const message =
         err.response?.data?.message || "Failed to load medicines.";
@@ -31,7 +40,7 @@ const UserMedicinesList = () => {
   };
 
   useEffect(() => {
-    loadMedicines();
+    loadMedicines(pagination.page);
   }, []);
 
   const categories = useMemo(() => {
@@ -87,7 +96,7 @@ const UserMedicinesList = () => {
   }
 
   if (error) {
-    return <ErrorState message={error} onRetry={loadMedicines} />;
+    return <ErrorState message={error} onRetry={() => loadMedicines(1)} />;
   }
 
   if (!medicines.length) {
@@ -98,6 +107,12 @@ const UserMedicinesList = () => {
       />
     );
   }
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= pagination.pages) {
+      loadMedicines(newPage);
+    }
+  };
 
   return (
     <div>
@@ -204,11 +219,56 @@ const UserMedicinesList = () => {
           description="Try clearing some filters or adjusting your search."
         />
       ) : (
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredMedicines.map((medicine) => (
-            <MedicineCard key={medicine._id} medicine={medicine} />
-          ))}
-        </section>
+        <>
+          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+            {filteredMedicines.map((medicine) => (
+              <MedicineCard key={medicine._id} medicine={medicine} />
+            ))}
+          </section>
+
+          {pagination.pages > 1 && (
+            <div className="flex items-center justify-between border-t border-slate-800 pt-6">
+              <div className="text-xs text-slate-400">
+                Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
+                {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
+                {pagination.total} medicines
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  disabled={pagination.page === 1}
+                  className="rounded-md border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-800 enabled:hover:text-slate-100"
+                >
+                  ← Previous
+                </button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: pagination.pages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`rounded-md px-2.5 py-1.5 text-xs font-medium ${
+                          page === pagination.page
+                            ? "bg-sky-600 text-white"
+                            : "border border-slate-700 text-slate-300 hover:bg-slate-800"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
+                </div>
+                <button
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  disabled={pagination.page === pagination.pages}
+                  className="rounded-md border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-800 enabled:hover:text-slate-100"
+                >
+                  Next →
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

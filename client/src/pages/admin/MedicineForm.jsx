@@ -164,7 +164,8 @@ const MedicineForm = () => {
               value={form.name}
               onChange={handleChange}
               required
-              className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              placeholder="Enter medicine name"
             />
           </div>
 
@@ -177,7 +178,8 @@ const MedicineForm = () => {
               value={form.description}
               onChange={handleChange}
               rows={3}
-              className="w-full resize-none rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full resize-none rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              placeholder="Describe the medicine"
             />
           </div>
 
@@ -193,7 +195,8 @@ const MedicineForm = () => {
                 step="0.01"
                 value={form.price}
                 onChange={handleChange}
-                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                placeholder="0.00"
               />
             </div>
 
@@ -206,7 +209,7 @@ const MedicineForm = () => {
                 value={form.form}
                 onChange={handleChange}
                 placeholder="Tablet, Syrup, Injection..."
-                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
               />
             </div>
           </div>
@@ -221,7 +224,7 @@ const MedicineForm = () => {
                 value={form.dosage}
                 onChange={handleChange}
                 placeholder="e.g. 500mg"
-                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
               />
             </div>
 
@@ -233,7 +236,8 @@ const MedicineForm = () => {
                 name="manufacturer"
                 value={form.manufacturer}
                 onChange={handleChange}
-                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                placeholder="e.g. Branded Pharma Ltd"
               />
             </div>
           </div>
@@ -246,7 +250,7 @@ const MedicineForm = () => {
               name="category"
               value={form.category}
               onChange={handleChange}
-              className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
             >
               <option value="">Select category</option>
               {categories.map((cat) => (

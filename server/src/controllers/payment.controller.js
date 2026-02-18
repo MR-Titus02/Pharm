@@ -47,3 +47,41 @@ export const processPayment = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+/**
+ * @desc    Get all payments with pagination
+ * @route   GET /api/payments?page=1&limit=10&status=paid
+ * @access  Admin
+ */
+export const getAllPayments = async (req, res) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 10));
+    const skip = (page - 1) * limit;
+
+    const filterQuery = { paymentStatus: { $ne: "pending" } };
+    if (req.query.status && ["paid", "failed"].includes(req.query.status)) {
+      filterQuery.paymentStatus = req.query.status;
+    }
+
+    const total = await Request.countDocuments(filterQuery);
+    const payments = await Request.find(filterQuery)
+      .populate("userId", "name email")
+      .populate("medicineId", "name category price")
+      .sort({ paymentDate: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.status(200).json({
+      payments,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

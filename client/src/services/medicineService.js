@@ -3,8 +3,10 @@ import axiosInstance from "../utils/axiosInstance";
 // Medicines service layer – all medicine-related API calls live here.
 // Backed by /api/medicines routes on the server.
 
-export const fetchMedicines = async () => {
-  const res = await axiosInstance.get("/medicines");
+export const fetchMedicines = async (page = 1, limit = 10) => {
+  const res = await axiosInstance.get("/medicines", {
+    params: { page, limit },
+  });
   return res.data;
 };
 

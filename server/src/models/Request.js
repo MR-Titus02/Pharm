@@ -39,6 +39,21 @@ const requestSchema = new mongoose.Schema(
     paymentDate: {
       type: Date,
     },
+
+    deliveryStatus: {
+      type: String,
+      enum: ["pending", "shipped", "delivered", "cancelled"],
+      default: "pending",
+    },
+
+    deliveryDate: {
+      type: Date,
+    },
+
+    deliveryNotes: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );

@@ -29,12 +29,13 @@ export const createRequest = async (req, res) => {
 
     const request = await Request.create({
       userId: req.user._id,
-      medicinedId,
+      medicineId,
       nic,
       prescriptionFile: medicine.prescriptionRequired
         ? `/uploads/${req.file.filename}`
         : null,
-      status: "pending",
+      // Auto-approve non-prescription medicines, require approval for prescription medicines
+      status: medicine.prescriptionRequired ? "pending" : "approved",
     });
 
     res.status(201).json(request);
@@ -44,17 +45,32 @@ export const createRequest = async (req, res) => {
 };
 
 /**
- * @desc    Get logged-in user's requests
- * @route   GET /api/requests/user
+ * @desc    Get logged-in user's requests with pagination
+ * @route   GET /api/requests/user?page=1&limit=10
  * @access  User
  */
 export const getUserRequests = async (req, res) => {
   try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 10));
+    const skip = (page - 1) * limit;
+
+    const total = await Request.countDocuments({ userId: req.user._id });
     const requests = await Request.find({ userId: req.user._id })
       .populate("medicineId", "name price prescriptionRequired")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
-    res.json(requests);
+    res.json({
+      requests,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

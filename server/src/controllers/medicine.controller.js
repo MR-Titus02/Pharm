@@ -1,14 +1,31 @@
 import Medicine from "../models/Medicine.js";
 
 /**
- * @desc    Get all medicines
- * @route   GET /api/medicines
+ * @desc    Get all medicines with pagination
+ * @route   GET /api/medicines?page=1&limit=10
  * @access  Public
  */
 export const getMedicines = async (req, res) => {
   try {
-    const medicines = await Medicine.find();
-    res.status(200).json(medicines);
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 10));
+    const skip = (page - 1) * limit;
+
+    const total = await Medicine.countDocuments();
+    const medicines = await Medicine.find()
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      medicines,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

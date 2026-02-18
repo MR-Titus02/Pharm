@@ -20,10 +20,7 @@ import UsersAdminList from "./pages/admin/UsersAdminList";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserDashboard from "./pages/UserDashboard";
 import PaymentPage from "./pages/payments/PaymentPage";
-
-
-
-
+import PaymentsAdminList from "./pages/admin/PaymentsAdminList";
 
 function App() {
   return (
@@ -62,6 +59,7 @@ function App() {
         <Route path="/admin/medicines/new" element={<MedicineForm />} />
         <Route path="/admin/medicines/:id/edit" element={<MedicineForm />} />
         <Route path="/admin/requests" element={<RequestsAdminList />} />
+        <Route path="/admin/payments" element={<PaymentsAdminList />} />
         <Route path="/admin/categories" element={<CategoriesAdminList />} />
         <Route path="/admin/categories/new" element={<CategoryForm />} />
         <Route path="/admin/categories/:id/edit" element={<CategoryForm />} />
