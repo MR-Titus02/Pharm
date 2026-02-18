@@ -91,10 +91,10 @@ const MedicinesAdminList = () => {
     <div>
       <header className="mb-6 flex items-center justify-between gap-2">
         <div>
-          <h1 className="text-lg font-semibold text-slate-900">
+          <h1 className="text-lg font-semibold text-slate-50">
             Manage medicines
           </h1>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-400">
             Add, edit, or remove medicines available in your pharmacy.
           </p>
         </div>

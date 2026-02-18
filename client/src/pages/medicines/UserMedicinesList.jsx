@@ -20,6 +20,7 @@ const UserMedicinesList = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
   const [maxPrice, setMaxPrice] = useState("");
+  const [allCategories, setAllCategories] = useState([]);
 
   const loadMedicines = async (page = 1) => {
     try {
@@ -43,13 +44,25 @@ const UserMedicinesList = () => {
     loadMedicines(pagination.page);
   }, []);
 
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await fetchCategories();
+        setAllCategories(Array.isArray(data) ? data.map(c => c.name) : []);
+      } catch (err) {
+        // ignore
+      }
+    };
+    loadCategories();
+  }, []);
+
   const categories = useMemo(() => {
-    const set = new Set();
+    const set = new Set(allCategories || []);
     medicines.forEach((m) => {
       if (m.category) set.add(m.category);
     });
     return Array.from(set).sort();
-  }, [medicines]);
+  }, [medicines, allCategories]);
 
   const filteredMedicines = useMemo(() => {
     return medicines.filter((m) => {

@@ -50,13 +50,20 @@ const UserMedicineDetail = () => {
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm grid md:grid-cols-2">
         <div className="bg-slate-100 flex items-center justify-center p-8 min-h-[300px]">
-          {/* Placeholder for real image */}
-          <div className="text-center">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-slate-200 text-3xl">
-              💊
+          {medicine.image ? (
+            <img
+              src={(import.meta.env.VITE_API_URL || "http://localhost:5001").replace('/api','') + medicine.image}
+              alt={medicine.name}
+              className="max-h-[420px] max-w-full object-contain"
+            />
+          ) : (
+            <div className="text-center">
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-slate-200 text-3xl">
+                💊
+              </div>
+              <p className="mt-4 text-sm text-slate-400 font-medium">No image available</p>
             </div>
-            <p className="mt-4 text-sm text-slate-400 font-medium">No image available</p>
-          </div>
+          )}
         </div>
 
         <div className="p-8 flex flex-col">

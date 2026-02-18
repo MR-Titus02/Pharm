@@ -74,8 +74,8 @@ const PaymentsAdminList = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="mb-2 text-2xl font-bold text-slate-900">Payment Management</h1>
-        <p className="text-sm text-slate-600">View and manage all transaction payments</p>
+        <h1 className="mb-2 text-2xl font-bold text-slate-50">Payment Management</h1>
+        <p className="text-sm text-slate-400">View and manage all transaction payments</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

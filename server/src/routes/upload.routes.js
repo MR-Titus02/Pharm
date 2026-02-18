@@ -22,5 +22,23 @@ router.post(
   }
 );
 
+router.post(
+  "/image",
+  protect,
+  upload.single("image"),
+  (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({
+        message: "Image file is required",
+      });
+    }
+
+    res.status(200).json({
+      message: "Image uploaded successfully",
+      file: req.file,
+    });
+  }
+);
+
 
 export default router;

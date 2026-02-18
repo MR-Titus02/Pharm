@@ -27,8 +27,8 @@ const AdminDashboard = () => {
   return (
     <div className="space-y-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Admin Dashboard</h1>
-        <p className="mt-1 text-sm text-slate-600">Overview of system health and activity</p>
+        <h1 className="text-2xl font-bold text-slate-50">Admin Dashboard</h1>
+        <p className="mt-1 text-sm text-slate-400">Overview of system health and activity</p>
       </div>
 
       {/* Main Stats */}
@@ -65,7 +65,7 @@ const AdminDashboard = () => {
 
       {/* Quick Actions */}
       <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-lg font-semibold text-slate-900">⚡ Quick Actions</h2>
+        <h2 className="mb-4 text-lg font-semibold text-slate-50">⚡ Quick Actions</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Link
             to="/admin/requests"
@@ -97,7 +97,7 @@ const AdminDashboard = () => {
       {/* Recent Activity */}
       <div className="grid gap-6 sm:grid-cols-2">
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="mb-4 font-semibold text-slate-900">📊 Request Summary</h3>
+          <h3 className="mb-4 font-semibold text-slate-50">📊 Request Summary</h3>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between border-b border-slate-200 pb-2">
               <span className="text-slate-600">Pending:</span>
@@ -119,7 +119,7 @@ const AdminDashboard = () => {
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="mb-4 font-semibold text-slate-900">📈 System Health</h3>
+          <h3 className="mb-4 font-semibold text-slate-50">📈 System Health</h3>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between border-b border-slate-200 pb-2">
               <span className="text-slate-600">Active Users:</span>

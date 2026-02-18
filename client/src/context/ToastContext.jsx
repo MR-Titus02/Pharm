@@ -38,10 +38,11 @@ export const ToastProvider = ({ children }) => {
             const base =
               "pointer-events-auto flex items-start gap-2 rounded-lg border px-3 py-2 text-xs shadow-lg";
             const stylesByType = {
+              // Use fully opaque backgrounds for better visibility in the UI
               success:
-                "border-emerald-500/40 bg-emerald-950/70 text-emerald-100",
-              error: "border-rose-500/40 bg-rose-950/70 text-rose-100",
-              info: "border-sky-500/40 bg-sky-950/70 text-sky-100",
+                "border-emerald-500/40 bg-emerald-950/100 text-emerald-100",
+              error: "border-rose-500/40 bg-rose-950/100 text-rose-100",
+              info: "border-sky-500/40 bg-sky-950/100 text-sky-100",
             };
 
             return (

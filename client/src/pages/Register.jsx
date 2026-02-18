@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 
@@ -15,6 +15,8 @@ const Register = () => {
     password: "",
     nic: "",
   });
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -132,14 +134,23 @@ const Register = () => {
               <label className="mb-1 block text-slate-200">
                 Password
               </label>
-              <input
-                type="password"
-                name="password"
-                placeholder="••••••••"
-                className="w-full rounded-md border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs text-slate-50 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                onChange={handleChange}
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="••••••••"
+                  className="w-full rounded-md border border-slate-700 bg-slate-900/70 px-3 py-2 pr-14 text-xs text-slate-50 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  onChange={handleChange}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-300 hover:text-slate-100"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
             </div>
 
             <div>
@@ -162,6 +173,12 @@ const Register = () => {
             >
               {loading ? "Registering..." : "Register"}
             </button>
+            <div className="mt-2 text-center text-xs text-slate-400">
+              Already have an account?{' '}
+              <Link to="/login" className="text-emerald-300 hover:underline">
+                Sign in
+              </Link>
+            </div>
           </form>
         </div>
       </div>

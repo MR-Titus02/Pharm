@@ -4,6 +4,7 @@ import {
   fetchCategories,
   deleteCategory,
 } from "../../services/categoryService";
+import { fetchMedicines } from "../../services/medicineService";
 import LoadingState from "../../components/LoadingState";
 import ErrorState from "../../components/ErrorState";
 import EmptyState from "../../components/EmptyState";
@@ -23,7 +24,24 @@ const CategoriesAdminList = () => {
       setError("");
       setLoading(true);
       const data = await fetchCategories();
-      setCategories(data);
+      let cats = Array.isArray(data) ? data : [];
+
+      // Also include any categories found on existing medicines so admin can see them
+      try {
+        const meds = await fetchMedicines(1, 1000);
+        const medList = meds?.medicines || [];
+        const medCats = Array.from(new Set(medList.map((m) => m.category).filter(Boolean)));
+        // Add med-only categories that aren't in the main categories list
+        medCats.forEach((name) => {
+          if (!cats.find((c) => c.name === name)) {
+            cats.push({ _id: `med-${name}`, name, description: "(from medicines)" });
+          }
+        });
+      } catch (mErr) {
+        // ignore medicine load errors
+      }
+
+      setCategories(cats);
     } catch (err) {
       setError("Failed to load categories.");
     } finally {
@@ -57,10 +75,10 @@ const CategoriesAdminList = () => {
     <div>
       <header className="mb-6 flex items-center justify-between gap-2">
         <div>
-          <h1 className="text-lg font-semibold text-slate-900">
+          <h1 className="text-lg font-semibold text-slate-50">
             Manage Categories
           </h1>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-400">
             Define categories to organize medicines.
           </p>
         </div>

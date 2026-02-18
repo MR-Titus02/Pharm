@@ -23,6 +23,10 @@ const medicineSchema = new mongoose.Schema(
       type: String,
       default: "General",
     },
+    image: {
+      type: String,
+      default: null,
+    },
     stock: {
       type: Number,
       default: 0,
@@ -30,6 +34,14 @@ const medicineSchema = new mongoose.Schema(
     manufacturer: {
       type: String,
       default: "Unknown",
+    },
+    dosage: {
+      type: String,
+      default: null,
+    },
+    form: {
+      type: String,
+      default: "Tablet",
     },
   },
   { timestamps: true }

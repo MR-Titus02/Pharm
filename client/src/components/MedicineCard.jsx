@@ -14,6 +14,7 @@ const MedicineCard = ({ medicine }) => {
     price,
     stock,
     requiresPrescription,
+    image,
   } = medicine;
 
   const inStock = (stock ?? 0) > 0;
@@ -27,6 +28,15 @@ const MedicineCard = ({ medicine }) => {
   return (
     <article className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <div>
+        {image && (
+          <div className="mb-3 h-28 w-full overflow-hidden rounded-md">
+            <img
+              src={(import.meta.env.VITE_API_URL || "http://localhost:5001").replace('/api','') + image}
+              alt={name}
+              className="h-full w-full object-cover"
+            />
+          </div>
+        )}
         <div className="mb-2 flex items-start justify-between gap-2">
           <h3 className="text-sm font-semibold text-slate-900">
             {name}
