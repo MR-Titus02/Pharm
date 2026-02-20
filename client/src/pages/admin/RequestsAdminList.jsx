@@ -32,6 +32,7 @@ const RequestsAdminList = () => {
   const [updatingDeliveryId, setUpdatingDeliveryId] = useState(null);
   const [filter, setFilter] = useState("all");
   const [viewingFile, setViewingFile] = useState(null);
+  const [viewingFileType, setViewingFileType] = useState(null); // 'nic' or 'prescription'
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -51,12 +52,14 @@ const RequestsAdminList = () => {
     return filePath.toLowerCase().endsWith('.pdf');
   };
 
-  const handleViewFile = (filePath) => {
+  const handleViewFile = (filePath, type = 'prescription') => {
     setViewingFile(filePath);
+    setViewingFileType(type);
   };
 
   const closeModal = () => {
     setViewingFile(null);
+    setViewingFileType(null);
   };
 
   const getFileUrl = (filePath) => {
@@ -210,6 +213,9 @@ const RequestsAdminList = () => {
                   <th className="px-4 py-2 text-left font-semibold text-slate-300">
                     Prescription
                   </th>
+                  <th className="px-4 py-2 text-left font-semibold text-slate-300">
+                    NIC Document
+                  </th>
                   <th className="px-4 py-2 text-right font-semibold text-slate-300">
                     Created
                   </th>
@@ -278,10 +284,23 @@ const RequestsAdminList = () => {
                         {hasPrescription ? (
                           <button
                             type="button"
-                            onClick={() => handleViewFile(request.prescriptionFile)}
+                            onClick={() => handleViewFile(request.prescriptionFile, 'prescription')}
                             className="text-sky-300 hover:text-sky-200 font-medium"
                           >
                             View file
+                          </button>
+                        ) : (
+                          "Not attached"
+                        )}
+                      </td>
+                      <td className="px-4 py-2 text-[11px] text-slate-300">
+                        {request.nicFile ? (
+                          <button
+                            type="button"
+                            onClick={() => handleViewFile(request.nicFile, 'nic')}
+                            className="text-emerald-300 hover:text-emerald-200 font-medium"
+                          >
+                            View NIC
                           </button>
                         ) : (
                           "Not attached"
@@ -393,7 +412,9 @@ const RequestsAdminList = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
           <div className="relative max-h-[90vh] max-w-2xl w-full rounded-lg border border-slate-700 bg-slate-950 overflow-hidden">
             <div className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
-              <h2 className="text-sm font-semibold text-slate-100">Prescription Document</h2>
+              <h2 className="text-sm font-semibold text-slate-100">
+                {viewingFileType === 'nic' ? 'NIC Document' : 'Prescription Document'}
+              </h2>
               <button
                 onClick={closeModal}
                 className="text-slate-400 hover:text-slate-100"

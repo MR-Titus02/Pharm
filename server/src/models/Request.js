@@ -19,9 +19,9 @@ const requestSchema = new mongoose.Schema(
       required: false, // only required if medicine requires prescription
     },
 
-    nic: {
+    nicFile: {
       type: String,
-      trim: true,
+      required: false, // File path to user's NIC document for admin verification
     },
 
     status: {

@@ -8,7 +8,7 @@ import Medicine from "../models/Medicine.js";
  */
 export const createRequest = async (req, res) => {
   try {
-    const { medicineId, nic } = req.body;
+    const { medicineId, nicFile } = req.body;
 
     if (!medicineId) {
       return res.status(400).json({ message: "Medicine ID is required" });
@@ -27,10 +27,16 @@ export const createRequest = async (req, res) => {
       });
     }
 
+    if (!nicFile) {
+      return res.status(400).json({
+        message: "NIC document is required for request verification",
+      });
+    }
+
     const request = await Request.create({
       userId: req.user._id,
       medicineId,
-      nic,
+      nicFile,
       prescriptionFile: medicine.prescriptionRequired
         ? `/uploads/${req.file.filename}`
         : null,

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { fetchMedicines } from "../../services/medicineService";
 import { createRequest } from "../../services/requestService";
 import { useAuth } from "../../context/AuthContext";
+import axiosInstance from "../../utils/axiosInstance";
 import LoadingState from "../../components/LoadingState";
 import ErrorState from "../../components/ErrorState";
 import { useToast } from "../../context/ToastContext";
@@ -15,12 +16,12 @@ const UserRequestCreate = () => {
 
   const [selectedMedicineId, setSelectedMedicineId] = useState("");
   const [file, setFile] = useState(null);
+  const [selectedPrescriptionName, setSelectedPrescriptionName] = useState("");
+  const [viewingNicFile, setViewingNicFile] = useState(null);
   const { showToast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { state } = useLocation();
-
-  const [nic, setNic] = useState(user?.nic || "");
 
   // Initialize with navigation state if available
   useEffect(() => {
@@ -28,6 +29,25 @@ const UserRequestCreate = () => {
       setSelectedMedicineId(state.medicineId);
     }
   }, [state]);
+
+  const isImageFile = (filePath) => {
+    if (!filePath) return false;
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    return imageExtensions.some(ext => filePath.toLowerCase().endsWith(ext));
+  };
+
+  const isPdfFile = (filePath) => {
+    if (!filePath) return false;
+    return filePath.toLowerCase().endsWith('.pdf');
+  };
+
+  const getFileUrl = (filePath) => {
+    if (!filePath) return "";
+    if (filePath.startsWith("http")) return filePath;
+    const apiUrl = axiosInstance.defaults.baseURL || "http://localhost:5001/api";
+    const baseUrl = apiUrl.replace("/api", "");
+    return `${baseUrl}${filePath}`;
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -52,15 +72,6 @@ const UserRequestCreate = () => {
     (m) => m._id === selectedMedicineId
   );
 
-  // Validate SL NIC (both old 12-digit and new 13-digit with V formats)
-  const validateNIC = (nicValue) => {
-    if (!nicValue) return false;
-    // Old format: 12 digits (e.g., 123456789012)
-    // New format: 12 digits + V (e.g., 123456789012V)
-    const nicRegex = /^\d{12}V?$/;
-    return nicRegex.test(nicValue.toUpperCase());
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -75,8 +86,8 @@ const UserRequestCreate = () => {
       return;
     }
 
-    if (selectedMedicine?.prescriptionRequired && nic && !validateNIC(nic)) {
-      setError("Please enter a valid SL NIC (e.g., 123456789012V or 123456789012).");
+    if (!user?.nicFile) {
+      setError("Your NIC document is required. Please complete your profile with a valid NIC document.");
       return;
     }
 
@@ -87,9 +98,8 @@ const UserRequestCreate = () => {
       if (file) {
         formData.append("prescription", file);
       }
-      if (nic) {
-        formData.append("nic", nic);
-      }
+      // Include user's registered NIC file path for admin verification
+      formData.append("nicFile", user.nicFile);
 
       await createRequest(formData);
       showToast({
@@ -184,19 +194,28 @@ const UserRequestCreate = () => {
           {selectedMedicine?.prescriptionRequired && (
             <div>
               <label className="mb-1 block text-slate-200">
-                NIC (National ID) <span className="text-rose-400">*</span>
+                Your NIC Document (Registered) <span className="text-emerald-400">✓</span>
               </label>
-              <input
-                type="text"
-                value={nic}
-                onChange={(e) => setNic(e.target.value.toUpperCase())}
-                placeholder="e.g., 123456789012V or 123456789012"
-                className="w-full rounded-md border border-slate-700 bg-slate-900/80 px-3 py-2 text-xs text-slate-50 uppercase focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-                required
-              />
-              <p className="mt-1 text-[10px] text-slate-400">
-                12 digits (old format) or 12 digits + V (new format)
-              </p>
+              {user?.nicFile ? (
+                <div className="rounded-md border border-slate-700 bg-slate-900/60 px-3 py-2">
+                  <p className="text-xs text-slate-300">
+                    Your NIC document from registration will be verified by the admin.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setViewingNicFile(user.nicFile)}
+                    className="mt-2 inline-block text-xs text-sky-400 hover:text-sky-300 font-medium"
+                  >
+                    View your NIC document →
+                  </button>
+                </div>
+              ) : (
+                <div className="rounded-md border border-rose-500/40 bg-rose-950/40 px-3 py-2">
+                  <p className="text-xs text-rose-200">
+                    Please complete your profile with a NIC document first.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -207,11 +226,15 @@ const UserRequestCreate = () => {
             <input
               type="file"
               accept="image/*,.pdf"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              onChange={(e) => {
+                const f = e.target.files?.[0] || null;
+                setFile(f);
+                setSelectedPrescriptionName(f?.name || "");
+              }}
               className="block w-full text-xs text-slate-300 file:mr-3 file:rounded-md file:border-0 file:bg-sky-600 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white hover:file:bg-sky-700"
             />
-            <p className="mt-1 text-[10px] text-slate-500">
-              Max size and allowed formats are enforced by the server.
+            <p className="mt-1 text-[10px] text-slate-400">
+              {selectedPrescriptionName || "No file selected"}
             </p>
           </div>
 
@@ -224,6 +247,62 @@ const UserRequestCreate = () => {
           </button>
         </form>
       </div>
+
+      {viewingNicFile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+          <div className="relative max-h-[90vh] max-w-2xl w-full rounded-lg border border-slate-700 bg-slate-950 overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
+              <h2 className="text-sm font-semibold text-slate-100">Your NIC Document</h2>
+              <button
+                onClick={() => setViewingNicFile(null)}
+                className="text-slate-400 hover:text-slate-100"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="overflow-y-auto" style={{ maxHeight: 'calc(90vh - 60px)' }}>
+              {isImageFile(viewingNicFile) ? (
+                <div className="flex items-center justify-center bg-slate-900 p-8">
+                  <img
+                    src={getFileUrl(viewingNicFile)}
+                    alt="NIC Document"
+                    className="max-w-full h-auto"
+                    onError={(e) => {
+                      e.target.src = "";
+                      e.target.parentElement.innerHTML = '<div class="text-center text-slate-400"><p>Failed to load image. Please try again.</p></div>';
+                    }}
+                  />
+                </div>
+              ) : isPdfFile(viewingNicFile) ? (
+                <iframe
+                  src={getFileUrl(viewingNicFile)}
+                  title="NIC Document PDF"
+                  className="w-full h-full"
+                  style={{ minHeight: '600px' }}
+                  onError={(e) => {
+                    console.error("PDF load error:", e);
+                  }}
+                />
+              ) : (
+                <div className="flex items-center justify-center p-8 text-slate-400">
+                  <div className="text-center">
+                    <p className="mb-2">Unable to preview this file type</p>
+                    <a
+                      href={getFileUrl(viewingNicFile)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sky-400 hover:text-sky-300 underline"
+                    >
+                      Open in new window
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

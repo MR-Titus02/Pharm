@@ -13,10 +13,12 @@ const Register = () => {
     name: "",
     email: "",
     password: "",
-    nic: "",
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [nicFile, setNicFile] = useState(null);
+  const [selectedNicFileName, setSelectedNicFileName] = useState("");
+  const [uploadingNic, setUploadingNic] = useState(false);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,10 +30,34 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    
+    if (!nicFile) {
+      setError("Please upload a NIC document.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const user = await register(form);
+      // Upload NIC file first
+      const fd = new FormData();
+      fd.append("nic", nicFile);
+      const uploadRes = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5001"}/upload/nic`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+        },
+        body: fd,
+      });
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok) throw new Error(uploadData.message || "NIC upload failed");
+
+      // Then register with NIC file path
+      const user = await register({
+        ...form,
+        nicFile: `/uploads/${uploadData.file.filename}`,
+      });
+      
       showToast({
         type: "success",
         message: "Account created. You are now signed in.",
@@ -42,7 +68,7 @@ const Register = () => {
         navigate("/");
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Register failed");
+      setError(err.response?.data?.message || err.message || "Register failed");
       showToast({
         type: "error",
         message: "Registration failed. Please check your details.",
@@ -155,15 +181,23 @@ const Register = () => {
 
             <div>
               <label className="mb-1 block text-slate-200">
-                NIC
+                NIC Document
               </label>
               <input
-                type="text"
-                name="nic"
-                placeholder="National ID"
+                type="file"
+                accept="image/*,.pdf"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setNicFile(file);
+                    setSelectedNicFileName(file.name);
+                  }
+                }}
                 className="w-full rounded-md border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs text-slate-50 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                onChange={handleChange}
               />
+              <p className="mt-1 text-xs text-slate-400">
+                {selectedNicFileName || "No file selected"}
+              </p>
             </div>
 
             <button

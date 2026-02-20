@@ -40,5 +40,21 @@ router.post(
   }
 );
 
+router.post(
+  "/nic",
+  upload.single("nic"),
+  (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({
+        message: "NIC document is required",
+      });
+    }
+
+    res.status(200).json({
+      message: "NIC document uploaded successfully",
+      file: req.file,
+    });
+  }
+);
 
 export default router;
