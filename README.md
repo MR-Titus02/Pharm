@@ -86,13 +86,11 @@ cd server
 npm install
 ```
 
-3. Create `.env` file:
+3. Create `.env` file by copying the sample:
+```bash
+cp .env.sample .env
 ```
-MONGODB_URI=mongodb://localhost:27017/pharmacy
-JWT_SECRET=your_secret_key_here
-PORT=5001
-NODE_ENV=development
-```
+Then edit `.env` with your values (MongoDB URI, JWT secret, etc.)
 
 4. Start the server:
 ```bash
@@ -112,10 +110,11 @@ cd client
 npm install
 ```
 
-3. Create `.env` file:
+3. Create `.env.local` file by copying the sample:
+```bash
+cp .env.sample .env.local
 ```
-VITE_API_URL=http://localhost:5001/api
-```
+This is pre-configured for local development
 
 4. Start the development server:
 ```bash
